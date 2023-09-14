@@ -1,11 +1,6 @@
----
-title: ComicFury Self-Documentation
-description: Documentation of ComicFury's templating engine's variables, conditionals, and loops, as well as how to use them and where they can be used.
----
-
 # ComicFury Templating Engine Documentation
 
-This is (likely incomplete) list of the variables, conditionals, and loops available using ComicFury's templating engine. It is *not* a guide on *how* to create a layout using the engine-- simply a resource listing the things you can use to do so. This document was compiled by combing through 3-4 different ComicFury templates and extracting all of the templating engine parts individually (as well as by looking at forum threads such as [this one, "CF Layout Code Variable Reference", by MatthewJA](https://comicfury.com/forum/viewthread.php?id=12232#p289444).)
+This is a (likely incomplete) list of the variables, conditionals, and loops available using ComicFury's templating engine. It is *not* a guide on *how* to create a layout using the engine-- simply a resource listing the things you can use to do so. This document was compiled by combing through 3-4 different ComicFury templates and extracting all of the templating engine parts individually (as well as by looking at forum threads such as [this one, "CF Layout Code Variable Reference", by MatthewJA](https://comicfury.com/forum/viewthread.php?id=12232#p289444).)
 
 ## Contents
 - [Top](#comicfury-templating-engine-documentation)
