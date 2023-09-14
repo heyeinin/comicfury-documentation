@@ -79,7 +79,7 @@ I've also included a list of [#other-useful-links](other useful links) with code
 
 ## Overall
 
-This is the HTML that appears on every single page. It is the base for the layout that all the pages are built on. The CSS for the other pages is inserted using `<!--layout[css]-->` between an opening and closing `<style>` tag. The content of the other pages is added using `<!--layout:[content]-->` somewhere between the opening and closing `<body>` tags.
+This is the HTML that appears on every single page. It is the base for the layout that all the pages are built on. The CSS for the other pages is inserted using `<!--layout:[css]-->` between an opening and closing `<style>` tag. The content of the other pages is added using `<!--layout:[content]-->` somewhere between the opening and closing `<body>` tags.
 
 ### Overall Variables
 - `[v:lastupdatedmy]` - the last updated date in DD/MM/YYYY format [eg. `08/09/2023`]
