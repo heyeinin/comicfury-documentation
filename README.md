@@ -3,7 +3,7 @@
 This is a (likely incomplete) list of the variables, conditionals, and loops available using ComicFury's templating engine. It is *not* a guide on *how* to create a layout using the engine-- simply a resource listing the things you can use to do so. This document was compiled by combing through 3-4 different ComicFury templates and extracting all of the templating engine parts individually (as well as by looking at forum threads such as [this one, "CF Layout Code Variable Reference", by MatthewJA](https://comicfury.com/forum/viewthread.php?id=12232#p289444).)
 
 ## Contents
-- [Top](#comicfury-templating-engine-documentation)
+- [Top](#comicfury-template-engine-documentation)
 - [Contents](#contents) (You are here)
 - [Preface](#preface)
 - [How to Use](#how-to-use)
@@ -59,7 +59,7 @@ The ComicFury templating engine is a massively powerful engine that allows you t
 
 I was unable to find a full documentation reference of the ComicFury templating engine. I could find a few assorted lists of different variables, but it didn't always tell me what pages they could be used on (as some variables can be used on multiple pages for different things) or *exactly what* they output (some variables output  text; others, links; some output entire huge blocks of HTML code.) So I compiled this for myself, but figured it might be useful for somebody else as well.
 
-[Back to Top](#comicfury-templating-engine-documentation)
+[Back to Top](#comicfury-template-engine-documentation)
 
 ## How to Use
 
@@ -75,7 +75,7 @@ I've also included a list of [#other-useful-links](other useful links) with code
 
 **NOTE:** Variables and conditions can be used in the HTML **as well as** the CSS.
 
-[Back to Top](#comicfury-templating-engine-documentation)
+[Back to Top](#comicfury-template-engine-documentation)
 
 ## Overall
 
@@ -134,7 +134,7 @@ This is the HTML that appears on every single page. It is the base for the layou
 [/]
 ```
 
-[Back to Top](#comicfury-templating-engine-documentation)
+[Back to Top](#comicfury-template-engine-documentation)
 
 ## Comics Page
 
@@ -173,7 +173,7 @@ These are all the pages that appear in the `/comics/` section of the website, eg
 
 ### Comics Page Loops
 #### Quicknav Dropdown Loop
-this loop controls the quick navigation dropdown between the links to the previous/next comics. It has two main conditions, `[c:l.newgroup]` and `c:l.endgroup]`, where the first contains the opening HTML and the second contains the closing HTML, so that the group doesn't render at all if you don't have any chapters. 
+This loop controls the quick navigation dropdown between the links to the previous/next comics. It has two main conditions, `[c:l.newgroup]` and `c:l.endgroup]`, where the first contains the opening HTML and the second contains the closing HTML, so that the group doesn't render at all if you don't have any chapters. 
 
 `[c:l.newgroup]<optgroup label="[v:l.grouplabel]">[/]` - contains the opening HTML
 `[c:l.endgroup]</optgroup>[/]` - contains the closing HTML
@@ -192,9 +192,10 @@ Where `[v:l.url]` is the link to the comic page, and `[v:l.title]` is the title 
 The other two conditionals, `[c:l.is_selected]` and `[c:l.is_disabled]` are for if the link has been selected or disabled, which is something handled internally. Don't mess with them and you'll be fine.
 
 #### Author Notes Loop
-This one is a bit more complicated. The authornotes loop is constructed so that if you have more than one author note, each one is rendered. There are a few different conditions and variables in this loop.
+This one is a bit more complicated. The `authornotes` loop is constructed so that if you have more than one author note, each one is rendered. There are a few different conditions and variables in this loop.
 Conditions: `[c:l.is_reply]`, `[c:l.is_last]`, `[c:l.isguest]`, `[c:l.avatar]`, and `[c:l.authorname]`.
 Variables: `[v:l.commentanchor]`, `[v:l.avatar]`, `[v:l.profilelink]`, `[v:l.authorname]`, `[v:l.posttime]`, and `[v:l.comment]`.
+
 Conditionals
 - `[c:l.is_reply]` - renders if the comment is a reply to another comment.
 - `[c:l.is_last]` - renders if it's the last comment in the comment chain.
@@ -251,7 +252,7 @@ It's the same as the Author Notes loop, but now for user comments. The variables
 
 ```
 
-[Back to Top](#comicfury-templating-engine-documentation)
+[Back to Top](#comicfury-template-engine-documentation)
 
 ## Archive
 
@@ -273,10 +274,31 @@ This is the code that appears on the archive pages `.../archive/` as well as the
 
 ### Archive Loops
 #### Paginated Comics Loop
-This is for the page at `/archive/comics` and renders the chapter-divided comics. 
+This is for the page at `/archive/comics` and renders the chapter-divided comics. The loop is utilized with `[l:comics_paginated]`.
 
 - The `[c:l.newchapter]` condition executes if the comic is divided up into chapters, and contains two variables: `[v:l.chaptername]` and `[v:l.chapterdescription]`. You can wrap `[v:l.chapterdescription]` in `[c:l.chapterdescription]` so that the block only renders if the chapter *has* a description.
 - After that, the other variables are `[v:l.number]`, which tells you what the page number of the comic overall is, then `[v:l.comictitle]`, `[v:l.comicurl]`, and `[v:l.posttime]`, which tells you when the comic was posted.
+- If you need to have code only render after the last comic of the chapter, you can use `[c:l.chapterend]`.
+
+```html
+[l:comics_paginated]
+    [c:l.newchapter]
+        <div class="chapter-name-desc">
+            <h3>[v:l.chaptername]</h3>
+              [c:l.chapterdescription][v:l.chapterdescription][/]
+        </div>
+        <div class="nl-archivecomics">
+    [/]
+    
+    <div class="nl-archivecomic">
+        <div class="nl-archivecomicnumber">[v:l.number].</div>
+        <a class="nl-archivecomictitle" href="[v:l.comicurl]" onpointerover="comicfury.thumbnailMouseOver(event, 'thumbnail-preview-box', [v:l.thumbnail_jsdata])" onpointerout="comicfury.thumbnailMouseOut(event)">[v:l.comictitle]</a>
+        <div class="nl-archivecomicposttime">[v:l.posttime]</div>
+    </div>
+[/]
+```
+
+If you want to display *images* for your comic archive, rather than a list of the comics and their titles with the previews available when you hover, ComicFury has a way of doing this as well. It is documented on this thread [here, in a post by Kyo on the forums](https://comicfury.com/forum/viewthread.php?id=45825&page=1#p1136397), in the **"How to convert my archive to have all this new stuff, the hard way"** section within the spoiler toward the bottom. This will be documented in full later...
 
 #### Chapter Overview Loop 
 This is very similar to the Paginated Comics Loop, but for chapters instead. 
@@ -291,7 +313,7 @@ The pagination loop contains two variables: `[v:l.pagelink]`, which is a link to
 
 There are two conditions contained within the pagination condition: the `skipped_ahead` condition and the `is_current` condition. `[c:l.skipped_ahead]` is for when there are many, many pages, and can be used to contain a div with "..." to indicate that the pages have been truncated. The `[c:l.is_current]` simply checks to see if the page number displayed is the number of the page you're currently on.
 
-[Back to Top](#comicfury-templating-engine-documentation)
+[Back to Top](#comicfury-template-engine-documentation)
 
 ## Overview
 
@@ -301,7 +323,10 @@ This is an optional default page for your webcomic that you can set on the Webco
 - `[v:webcomicname]` 
 - `[v:latestcomictitle]` - the title of the latest comic published.
 - `[v:latestcomicposttime]` - the time posted of the latest comic published.
+- `[v:latestcomicpermalink]` - a permalink to the latest comic published.
+- `[v:latestcomicdescription]` - the description of the latest comic.
 - `[v:latestcomicimage]` - `[v:comicimage]`, but it always displays the most recently published comic.
+- `[v:latestcomicimageurl]` - `[v:comicimageurl]`, but it always returns the URL of the most recently published comic.
 - `[v:comictitle]`
 - `[v:banneradcode]`
 - `[v:posttime]`
@@ -314,6 +339,29 @@ This is an optional default page for your webcomic that you can set on the Webco
 - `[v:latestcomicid]` - `[v:comicid]`, but it always provides the ID of the most recently published comic.
 - `[v:latestcomiccomments]` - the number of recent comments
 - `[v:blogarchivelink]` - the actual URL to the blog archive.
+
+There are some additional variables exclusively relating to the first comic:
+- `[v:firstcomicpermalink]` - A permalink to the first comic.
+- `[v:firstcomicid]` - like `[latestcomicid]`, but for the first comic.
+- `[v:firstcomictitle]` - the title of the first comic.
+- `[v:firstcomicposttime]` - the post time of the first comic.
+- `[v:firstcomiccomments]` - the comments on the first comic.
+- `[v:firstcomicdescription]` - the description of the first comic.
+
+As well as some related just to the thumbnail:
+- `[v:firstcomicthumbnail_url]` - the URL of the first comic thumbnail.
+- `[v:firstcomicthumbnail_width]` - the width of the thumbnail image
+- `[v:firstcomicthumbnail_height]` - the height of the thumbnail image
+- `[v:firstcomicthumbnail_width_small]` - half the width of the thumbnail image
+- `[v:firstcomicthumbnail_height_small]` - half the height of the thumbnail image
+
+These variables also exist for the latest comic image:
+- `[v:comicthumbnail]` - the URL of the latest comic thumbnail image.
+- `[v:comicthumbnail_url]` - also the URL of the latest comic thumbnail image.
+- `[v:comicthumbnail_width]` - the width of the comic thumbnail image.
+- `[v:comicthumbnail_height]` - the height of the comic thumbnail image.
+- `[v:comicthumbnail_width_small]` - half the width of the comic thumbnail image.
+- `[v:comicthumbnail_height_small]` - half the height of the comic thumbnail image.
 
 ### Overview Conditionals
 - `[c:hascomics]`
@@ -355,7 +403,7 @@ Within the loop, there is a conditional called `[c:l.allowcomments]`, which, if 
 
 `<a href="[v:l.bloglink]">view [v:l.comments] comment[c:l.comments!=1]s[/]</a>`
 
-[Back to Top](#comicfury-templating-engine-documentation)
+[Back to Top](#comicfury-template-engine-documentation)
 
 ## Search 
 
@@ -382,7 +430,7 @@ The `[l.searchresults]` loop displays a list (much like the archive) of results 
 [/]
 ```
 
-[Back to Top](#comicfury-templating-engine-documentation)
+[Back to Top](#comicfury-template-engine-documentation)
 
 ## Blog Archive
 Available at `.../blog/` and `.../blogarchive/` (after the second page of blogs.)
@@ -425,7 +473,7 @@ The `[l:blogs_paginated]` loop shows each blog entry, the author and time it was
 #### Pagination Loop
 The Pagination Loop was already used on the Comics Page and is exactly the same each time it appears. You can view the [documentation for the Pagination Loop here](#pagination-loop).
 
-[Back to Top](#comicfury-templating-engine-documentation)
+[Back to Top](#comicfury-template-engine-documentation)
 
 ## Blog Display
 
@@ -440,7 +488,7 @@ This is for the display of the actual blog page itself, eg. `.../blogarchive/389
 - `[v:profilelink]`
 - `[v:avatar]` 
 - `[v:authorname]`
-- `[v:posttime]
+- `[v:posttime]`
 - `[v:commentform]`
 
 ### Blog Display Conditionals
@@ -451,19 +499,19 @@ This is for the display of the actual blog page itself, eg. `.../blogarchive/389
 - `[c:comments]`
 - `[c:allowcomments]`
 - `[c:allowguestcomments]` - renders if guest comments are allowed.
-- 
+
 ### Blog Display Loops
 Because this is the page for each individual blog post, the only loop is the [Comments Loop](#comments-loop), which has already been defined on the Comics page.
 
-[Back to Top](#comicfury-templating-engine-documentation)
+[Back to Top](#comicfury-template-engine-documentation)
 
 ## Error Page
 
 The page that shows whenever someone attempts to view a page that does not exist.
 
 ### Error Page Variables
-- `v:errortitle]` -  error text.
-- `v:errormessage]` - HTML for the error message.
+- `[v:errortitle]` -  error text.
+- `[v:errormessage]` - HTML for the error message.
   
 ### Error Page Conditionals
 This page contains no conditionals.
@@ -471,7 +519,7 @@ This page contains no conditionals.
 ### Error Page Loops
 This page contains no loops.
 
-[Back to Top](#comicfury-templating-engine-documentation)
+[Back to Top](#comicfury-template-engine-documentation)
 
 ## Other Useful Links
 
