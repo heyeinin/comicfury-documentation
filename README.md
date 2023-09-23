@@ -90,12 +90,11 @@ This is the HTML that appears on every single page. It is the base for the layou
 - `[v:permalink]` - the actual URL to the specific page requested
 - `[v:comicimageurl]` - the actual URL to this specific comic image.
   * not to be confused with `[v:comicimage]`, which is the image contained within an `<img>` tag, among other things.
+- `[v:comicnumber]` - the number of the comic according to the order in which it was published
 - `[v:comicwidth]`, `[v:comicheight]` - the width and height of the comic
 - `[v:cfscriptcode]` - inserts ComicFury's script code. Don't touch this. Requires no explanation, just don't touch it.
 - `[v:banner]` - the actual URL to the uploaded banner if uploaded on the "Webcomic Banner" page.
 - `[v:infinitescrolllink]` - if infinite scroll is enabled, contains the actual URL to the infinite scroll version of the comic. 
-- `[v:banneradcode]` - the HTML for a banner ad for ComicFury.
-- `[v:toweradcode]` - the HTML for a tower ad for ComicFury.
 - `[v:addsubscriptionlink]` - the actual URL to the confirm page to subscribe to the webcomic.
 - `[v:comicprofile]` - the actual URL to the Comic Profile.
 - `[v:copyrights]` -  copyrights as set on the "Webcomic Info" page.
@@ -111,6 +110,8 @@ This is the HTML that appears on every single page. It is the base for the layou
 - `[v:webcomicactivitystatus]` - the activity status of your webcomic (active/completed/on hiatus.)
 - `[v:webcomicgenre]` - the genre of your webcomic.
 - `[v:webcomicslogan]` - the slogan of your webcomic. 
+- ~~`[v:banneradcode]` - the HTML for a banner ad for ComicFury.~~ Deprecated and currently does not work.
+- ~~`[v:toweradcode]` - the HTML for a tower ad for ComicFury.~~ Deprecated and currently does not work.
   
 ### Overall Conditionals
 - `[c:iscomicpage]` - renders if on a comic page.
@@ -146,6 +147,8 @@ These are all the pages that appear in the `/comics/` section of the website, eg
 - `[v:chapterlink]` - the actual URL to the chapter collection the comic is in.
 - `[v:chaptername]` - the name of the chapter collection the comic is in.
 - `[v:comicimage]` - the URL to the comic image contained within an `<img>` tag, ready-to-use.
+- `[v:comicimagetype]` - the type of comic uploaded (single page, multi-page, or html)
+- `[v:comicnumber]` - the number of the comic according to the order in which it was published
 - `[v:prevcomic]`
 - `[v:nextcomic]`
 - `[v:rating]` - the rating of the comic.
@@ -158,7 +161,6 @@ These are all the pages that appear in the `/comics/` section of the website, eg
 ### Comics Page Conditionals
 - `[c:usechapters]` - renders if "Use a chapter system" is turned on.
 - `[c:haschapter]` - rendered if the comic is contained within a chapter.
-- `[c:bannerads]` - renders if "Advertisement Settings" are set to "allow."
 - `[c:allowratings]` - renders if rating is allowed.
 - `[c:isfirstcomic]`
 - `[c:islastcomic]`
@@ -170,26 +172,67 @@ These are all the pages that appear in the `/comics/` section of the website, eg
 - `[c:comments]` - renders if there are comments.
 - `[c:allowcomments]` - renders if comments are enabled in Webcomic Settings.
 - `[c:allowguestcomments]` - renders if guests may add comments.
+- ~~`[c:bannerads]` - renders if "Advertisement Settings" are set to "allow."~~ Deprecated and does not currently work.
 
 ### Comics Page Loops
 #### Quicknav Dropdown Loop
-This loop controls the quick navigation dropdown between the links to the previous/next comics. It has two main conditions, `[c:l.newgroup]` and `c:l.endgroup]`, where the first contains the opening HTML and the second contains the closing HTML, so that the group doesn't render at all if you don't have any chapters. 
+This loop controls the quick navigation dropdown between the links to the previous or next comics. It is contained in a `select` field, which is necessary to get the comic to be able to "jump" to various pages from the dropdown. 
 
-`[c:l.newgroup]<optgroup label="[v:l.grouplabel]">[/]` - contains the opening HTML
-`[c:l.endgroup]</optgroup>[/]` - contains the closing HTML
+Within the `select` field, we have a loop: `[l:dropdown]`, containing 4 conditions, `[c:l.newgroup]` and `[c:l.endgroup]` for chapter management, and `[c:l.is_seleted]` and `[c:l.is_disabled]`, which contain values that are handled internally. (Though, for context, `[c:l.is_selected]` controls the "pre-selected option" for the dropdown-- the page you're currently on-- and [you can read a little more about how it works on W3Schools here](https://www.w3schools.com/tags/att_option_selected.asp). `[c:l.is_disabled]` is for if a page from the dropdown is disabled. It means you can't click on it. [W3Schools has an article about this as well](https://www.w3schools.com/tags/att_option_disabled.asp), if some context is necessary.)
 
-The variable in the opening HTML is `[v:l.grouplabel]`, where `grouplabel` is the name of the chapter.
+In `[l:dropdown]`, we have 3 variables: 
+- `[v:l.grouplabel]`, the name of the chapter, if your comic has chapters. 
+- `[v:l.url]`, the URL to the page we want to access. It is appended with the `#content-start` anchor so that, when the page loads, the comic is front and center. 
+- `[v:l.title]`, the title of the comic we are linking to.
 
-The meat of the loop that renders **regardless of whether or not there are chapters** is this:
+```html
+<select onchange="jumpTo(this.options[selectedIndex].value);">
+  [l:dropdown]
+    [c:l.newgroup]<optgroup label="[v:l.grouplabel]">[/]
+        <option value="[v:l.url]#content-start" [c:l.is_selected]selected="selected"[/] [c:l.is_disabled]disabled="disabled"[/]>
+          [v:l.title]
+        </option>
+    [c:l.endgroup]</optgroup>[/]
+  [/]
+</select>
+```
 
-```html 
-<option value="[v:l.url]#content-start" [c:l.is_selected]selected="selected"[/] [c:l.is_disabled]disabled="disabled"[/]>            [v:l.title]
+As we can see in this code example, we start with the `select` field, with an `onchange` event attribute. The `onchange` attribute means that the moment the user selects something from the dropdown, it will execute the code contained in the `onchange` value, in this case `jumpTo(this.options[selectedIndex].value)`, which will cause the user to "jump" to the selected page.
+
+We then call the `[l:dropdown]` loop, which allows us to create the `option`s within the `select` field. Each `option` is going to be a link that we can select to jump to. 
+
+**If you have chapters, it will display a list of chapters, and the only individual comic links will be to the chapter the user is currently in.** The rest of the links will be to the first comic of the chapters without the individual comics listed. This is handled by the conditional `[c:l.newgroup]`, which holds the `optgroup` tag, which is used to hold related elements within a `select` element. [(More about that on W3Schools here.)](https://www.w3schools.com/tags/tag_optgroup.asp) 
+
+The full `optgroup` tag is `<optgroup label="[v:l.grouplabel]">`, where `[v:l.grouplabel]` is the name of the chapter. This is wrapped in the `[c:l.newgroup]` condition so that it only renders if you have chapters in your comic. **If your comic has chapters, omitting the `optgroup` label will not show a link to every individual comic.** It will just display as it normally would but without groupings, which is visually confusing. 
+
+**If you do not have chapters, the individual comics will be listed in full.** The `[c:l.newgroup]` condition will be false and the comics will simply be listed as each individual `option`.
+
+As for the `option`s in the `select` field, the code is this: 
+
+```html
+<option value="[v:l.url]#content-start" [c:l.is_selected]selected="selected"[/] [c:l.is_disabled]disabled="disabled"[/]>
+  [v:l.title]
 </option>
 ```
 
-Where `[v:l.url]` is the link to the comic page, and `[v:l.title]` is the title of the comic page (the same as `[v:comictitle]`.)
+This controls each thing we can select in the dropdown. The `value` tag contains `[v:l.url]#content-start`, which links to the comic page with the anchor of `#content-start`, which jumps straight to the comic. The `[c:is_selected]` and `[c:is_disabled]` conditions have been explained above. Then, within the `option` tag, we have what the option will be called: `[v:l.title]`, the name of the comic it links to.
 
-The other two conditionals, `[c:l.is_selected]` and `[c:l.is_disabled]` are for if the link has been selected or disabled, which is something handled internally. Don't mess with them and you'll be fine.
+This `option` tag is generated as many times as ComicFury needs to to fit all of your comics (either in each chapter, or overall) into the dropdown menu. A fully generated loop where the user is on page one of the first chapter may look like this:
+
+```html
+<select onchange="jumpTo(this.options[selectedIndex].value);">
+    <optgroup label="Chapter One">
+      <option value="/comics/1/#content-start" selected="selected">Page One</option>
+      <option value="/comics/2/#content-start">Page Two</option>
+    </optgroup>
+    
+    <option value="/comics/3/#content-start">Chapter Two</option>
+    <option value="/comics/5/#content-start">Chapter Three</option>
+    <option value="/comics/7/#content-start">Chapter Four</option>
+</select>
+```
+
+
 
 #### Author Notes Loop
 This one is a bit more complicated. The `authornotes` loop is constructed so that if you have more than one author note, each one is rendered. There are a few different conditions and variables in this loop.
@@ -262,15 +305,15 @@ This is the code that appears on the archive pages `.../archive/` as well as the
 - `[v:chaptername]` -  name of the chapter collection the comic is in
 - `[v:chapterdescription]` - The HTML of the chapter description 
 - `[v:thumbnail_box_styles]` - the styles of the mouseover box that previews the comic on the comics list.
-- `[v:banneradcode]`
+- ~~`[v:banneradcode]`~~ Deprecated.
 
 ### Archive Conditionals
 - `[c:ischapterarchive]` - renders if chapters are enabled
-- `[c:bannerads]`
 - `[c:show_comic_list]` - renders if comic is in comic view (as opposed to chapter view) (or if comic has no chapters)
 - `[c:usechapters]` 
 - `[c:show_chapter_overview]` - renders if comic is in chapter view
 - `[c:lastpagenumber>1]` - renders if you have more than one page of comics.
+- ~~`[c:bannerads]`~~ Deprecated.
 
 ### Archive Loops
 #### Paginated Comics Loop
@@ -328,7 +371,6 @@ This is an optional default page for your webcomic that you can set on the Webco
 - `[v:latestcomicimage]` - `[v:comicimage]`, but it always displays the most recently published comic.
 - `[v:latestcomicimageurl]` - `[v:comicimageurl]`, but it always returns the URL of the most recently published comic.
 - `[v:comictitle]`
-- `[v:banneradcode]`
 - `[v:posttime]`
 - `[v:chapterlink]`
 - `[v:chaptername]`
@@ -339,6 +381,7 @@ This is an optional default page for your webcomic that you can set on the Webco
 - `[v:latestcomicid]` - `[v:comicid]`, but it always provides the ID of the most recently published comic.
 - `[v:latestcomiccomments]` - the number of recent comments
 - `[v:blogarchivelink]` - the actual URL to the blog archive.
+- ~~`[v:banneradcode]`~~ Deprecated.
 
 There are some additional variables exclusively relating to the first comic:
 - `[v:firstcomicpermalink]` - A permalink to the first comic.
@@ -356,7 +399,6 @@ As well as some related just to the thumbnail:
 - `[v:firstcomicthumbnail_height_small]` - half the height of the thumbnail image
 
 These variables also exist for the latest comic image:
-- `[v:comicthumbnail]` - the URL of the latest comic thumbnail image.
 - `[v:comicthumbnail_url]` - also the URL of the latest comic thumbnail image.
 - `[v:comicthumbnail_width]` - the width of the comic thumbnail image.
 - `[v:comicthumbnail_height]` - the height of the comic thumbnail image.
@@ -364,8 +406,7 @@ These variables also exist for the latest comic image:
 - `[v:comicthumbnail_height_small]` - half the height of the comic thumbnail image.
 
 ### Overview Conditionals
-- `[c:hascomics]`
-- `[c:bannerads]`
+- `[c:hascomics]
 - `[c:usechapters]`
 - `[c:haschapter]`
 - `[c:isfirstcomic]`
@@ -374,6 +415,7 @@ These variables also exist for the latest comic image:
 - `[c:latestcomiccomments]`
 - `[c:hasblogs]`
 - `[c:hasmoreblogs]`
+- ~~`[c:bannerads]`~~ Deprecated.
 
 ### Overview Loops
 #### Quicknav Dropdown Loop
@@ -411,12 +453,12 @@ The search page, available at `.../search/`.
 
 ### Search Variables 
 - `[v:searchterm]` - What the user searched for in the search bar.
-- `[c:banneradcode]`
+- ~~`[c:banneradcode]`~~ Deprecated.
   
 ### Search Conditionals
 - `[c:searched]` - renders if something has been searched using the search bar.
 - `[c:foundresults]` - renders if something has been found after searching.
-- `[c:bannerads]`
+- ~~`[c:bannerads]`~~ Deprecated.
 
 ### Search Loops
 #### Search Results Loop
